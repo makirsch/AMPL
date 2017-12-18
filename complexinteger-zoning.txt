@@ -1,0 +1,92 @@
+# Michael Kirsch - Complex Integer Program - Zoning
+
+# A retirement community consists of 5 zones.  Only two of the zones can be
+# assigned a fire station, but all five need to be serviced by the two stations.
+# Each assigned station zone-fire zone pair has a different response time
+# (in minutes) to a fire in that zone. Station responses to the zones to which
+# they are assigned are obviously the fastest, and then decline in farther away
+# zones.   There are two decision variables, which zones to assign the fire
+# stations to, and, subsequently, to which assigned station-zone to assign  each
+# of the remaining non-station fire zone. The objective is to minimize the average
+# response times.
+
+# One constraint is having only two stations that can be assigned.  Another
+# is that two stations cannot be assigned to the same zone. Another is that
+# the fire zones that do not have stations assigned to them cannot be assigned
+# to other non-station fire zones. They must be assigned to a station-zone.
+
+***************
+
+# Model
+
+set stationZone;
+set fireZone;
+
+var stationAssign{stationZone} binary;
+
+var zoneAssign{stationZone, fireZone} binary;
+
+param responseTime{stationZone, fireZone};
+
+minimize totalResponse:
+sum{s in stationZone, f in fireZone}responseTime[s, f] * zoneAssign[s, f];
+
+subject to onlyTwoStations:
+sum{s in stationZone}stationAssign[s] = 2;
+
+subject to onlyOneStationinaZone{f in fireZone}:
+sum{s in stationZone}zoneAssign[s, f] = 1;
+
+subject to nonStationzoneAssignment{s in stationZone, f in fireZone}:
+zoneAssign[s, f] <= stationAssign[s];
+
+
+****************
+# Data file
+
+set stationZone := 1 2 3 4 5;
+set fireZone := 1 2 3 4 5;
+
+param responseTime:
+
+  1  2  3  4  5 :=
+
+1 5 12 30 20 15
+2 20 4 15 10 25
+3 15 20 6 15 12
+4 25 15 25 4 10
+5 10 25 15 12 5;
+
+
+*****************
+
+# Solution:
+
+44 minutes average response time.
+
+Stations are assigned to zone 2 and 5 of Pilgrim Haven.
+
+Fire-zone 1 is then assigned to station-zone 5, and fire-zone 3
+and 4 are assigned to station-zone 2.
+
+CPLEX 12.7.1.0: optimal integer solution; objective 44
+9 MIP simplex iterations
+0 branch-and-bound nodes
+
+ampl: display stationAssign;
+stationAssign [*] :=
+1  0
+2  1
+3  0
+4  0
+5  1
+;
+
+ampl: display zoneAssign;
+zoneAssign [*,*]
+:   1   2   3   4   5    :=
+1   0   0   0   0   0
+2   0   1   1   1   0
+3   0   0   0   0   0
+4   0   0   0   0   0
+5   1   0   0   0   1
