@@ -1,0 +1,90 @@
+# Michael Kirsch - Complex Demand Production Model
+
+# Maximize profit under inventory, worker, and production balance constraints.
+
+CPLEX 12.7.1.0: optimal solution; objective 22750
+19 dual simplex iterations (11 in phase I)
+
+ampl: display hired,fired,workers,pantsProduced,inventory,sold;
+: hired fired workers pantsProduced inventory  sold    :=
+0    .     .     4           .            0      .
+1   0.5    0     4.5        450           0     450
+2   0      0     4.5        450           0     450
+3   0      0     4.5        450         150     300
+4   0      0     4.5        450         200     400
+5   0      0     4.5        450         350     300
+6   0      0     4.5        450           0     800
+;
+
+**********
+model file
+**********
+
+param Nmonths;
+set allMonths:= 0..Nmonths;
+set months:= 1..Nmonths;
+
+var hired{months} >=0; # number of people hired
+var fired{months} >=0; # number of people fired
+var workers{allMonths} >=0; # number of workers available
+var pantsProduced{months} >=0; # pants produced
+var inventory{allMonths} >=0; # pants in inventory from month n to n+1
+var sold{months} >=0; # pants sold
+
+param costToHire;
+param costToFire;
+param costToInventory;
+param pantsProfit; # profit after raw material cost
+param maxDemand{months}; # max pants than can be sold
+param laborCost; # hours labor to make pants
+param maxHours; # number of hours worker can work per month
+param workerPay; # cost per worker per month
+param initialWorkers; # workers at beginning of month 1
+param initialInventory; # inventory at beginning of month 1
+
+maximize profit:
+sum{i in months}(pantsProfit*pantsProduced[i] - costToHire*hired[i]
+- costToFire*fired[i] - costToInventory*inventory[i] - workerPay*workers[i]);
+
+subject to initialWorkersConstraint:
+workers[0] = initialWorkers;
+
+subject to initialInventoryConstraint:
+inventory[0] = initialInventory;
+
+subject to workerBalance{i in months}:
+workers[i-1] + hired[i] - fired[i] = workers[i];
+
+subject to pantsProduction{i in months}:
+laborCost*pantsProduced[i] <= maxHours*workers[i];
+
+subject to pantsSupply{i in months}:
+inventory[i-1] + pantsProduced[i] = sold[i] + inventory[i];
+
+subject to demand{i in months}:
+sold[i] <= maxDemand[i];
+
+
+**********
+data file
+**********
+
+param: maxDemand:=
+
+1 500
+2 600
+3 300
+4 400
+5 300
+6 800;
+
+param workerPay 2000;
+param costToHire 1500;
+param costToFire 1000;
+param costToInventory 5;
+param laborCost 2;
+param pantsProfit 30;
+param Nmonths 6;
+param maxHours 200;
+param initialWorkers 4;
+param initialInventory 0;

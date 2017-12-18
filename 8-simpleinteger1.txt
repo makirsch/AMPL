@@ -1,0 +1,54 @@
+# Michael Kirsch - Simple Integer LP 1
+
+# Two people need to split four jobs equally such that they minimize
+the time required to complete them.  The data file shows the time
+in hours required to perform each job (marketing = M, cooking = C,
+dishwashing = D, laundry = L) per person.
+
+**************
+
+# model file
+
+set people;
+set jobs;
+
+param timeNeeded{people, jobs};
+
+var assign{people, jobs} binary;
+
+minimize time:
+sum{p in people, j in jobs}assign[p,j]*timeNeeded[p,j];
+
+subject to twoJobsPerPerson{p in people}:
+sum{j in jobs}assign[p,j] = 2;
+
+subject to onePersonPerJob{j in jobs}:
+sum{p in people}assign[p,j] = 1;
+
+*************
+
+# data file
+
+set people:= E S;
+set jobs:= M C D L;
+
+param timeNeeded:
+     M C D L :=
+E  4.5 7.8 3.6 2.9
+S  4.9 7.2 4.3 3.1;
+
+******************
+
+CPLEX 12.7.1.0: optimal integer solution; objective 18.4
+0 MIP simplex iterations
+0 branch-and-bound nodes
+ampl: display assign;
+assign :=
+E C   0
+E D   1
+E L   0
+E M   1
+S C   1
+S D   0
+S L   1
+S M   0

@@ -1,0 +1,54 @@
+# Michael Kirsch - Production-Inventory LP
+
+# A company must meet three months of demand, producing units at two locations.
+# Decision variables: how much to produce at each location each month and how
+# much to inventory each month. Company faces demand constraints and labor
+# constraints. Minimize cost: $350 per unit location 1 (NY), $400 location 2 (LA),
+# $100 per unit to inventory for one month.
+
+# Decision variables:
+
+var P11 >=0; # of units produced at location 1(New York) in month 1
+var P21 >=0; # of units produced at location 2(Los Angeles) in month 1
+var P12 >=0;
+var P22 >=0;
+var P13 >=0;
+var P23 >=0;
+var I1  >=0; # of units inventoried in month 1
+var I2  >=0;
+param I0 = 200;
+var I3 >=0;
+
+# Objective Function:
+
+minimize cost: 350*(P11 + P12 + P13) + 400*(P21 + P22 + P23)
++ 100*(I1 + I2);
+
+# Constraints:
+
+# old inventory + production - new inventory = demand
+subject to demand1: I0 + P11 + P21 - 300 = I1;
+subject to demand2: I1 + P12 + P22 - 400 = I2;
+subject to demand3: I2 + P13 + P23 - 500 = 0;
+subject to inventory: I3 = 0;
+
+# 2 hrs of labor required to produce in NY, 1.5 in LA
+subject to labor1: 2*P11   <= 420;
+subject to labor2: 1.5*P21 <= 420;
+subject to labor3: 2*P12   <= 420;
+subject to labor4: 1.5*P22 <= 420;
+subject to labor5: 2*P13   <= 420;
+subject to labor6: 1.5*P23 <= 420;
+
+# Solution:
+
+CPLEX 12.7.1.0: optimal solution; objective 375000
+2 dual simplex iterations (0 in phase I)
+ampl: display P21,P12,P22,P13,P23,I1,I2;
+P21 = 0
+P12 = 210
+P22 = 200
+P13 = 210
+P23 = 280
+I1 = 0
+I2 = 10

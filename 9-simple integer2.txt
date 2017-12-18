@@ -1,0 +1,80 @@
+# Michael Kirsch - Simple Integer LP 2
+
+# A swim team has five swimmers and four swimming strokes it needs to
+# perform at a relay event. It needs to assign the best four swimmers
+# of the group to minimize its time.  The data file shows the time
+# (in seconds) required for the swimmers to complete the strokes (for 50 yards).
+
+*********
+
+# model file
+
+set people;
+set strokes;
+
+param swimTime{people, strokes};
+
+var assign{people, strokes} binary;
+
+minimize time:
+sum{p in people, s in strokes}assign[p,s]*swimTime[p,s];
+
+subject to fourSwimmers:
+sum{p in people, s in strokes}assign[p,s] = 4;
+
+subject to onePersonPerStroke{s in strokes}:
+sum{p in people}assign[p,s] = 1;
+
+subject to oneStrokePerPerson{p in people}:
+sum{s in strokes}assign[p,s] <= 1;
+
+***********
+
+# data file
+
+set people:= C H D T K;
+# Carl Chris David Tony Ken
+set strokes:= Back Breast Butterfly Freestyle;
+
+param swimTime:
+  Back Breast Butterfly Freestyle :=
+C 37.7 43.4 33.3 29.2
+H 32.9 33.1 28.5 26.4
+D 33.8 42.2 38.9 29.6
+T 37.0 34.7 30.4 28.5
+K 35.4 41.8 33.6 31.1;
+
+****************
+
+CPLEX 12.7.1.0: optimal integer solution; objective 126.2
+3 MIP simplex iterations
+0 branch-and-bound nodes
+ampl: display assign;
+assign :=
+C Back        0
+C Breast      0
+C Butterfly   0
+C Freestyle   1
+D Back        1
+D Breast      0
+D Butterfly   0
+D Freestyle   0
+H Back        0
+H Breast      0
+H Butterfly   1
+H Freestyle   0
+K Back        0
+K Breast      0
+K Butterfly   0
+K Freestyle   0
+T Back        0
+T Breast      1
+T Butterfly   0
+T Freestyle   0
+
+126.2 seconds
+
+Carl on freestyle
+David on backstroke
+Chris on butterfly
+Tony on breaststroke

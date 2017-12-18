@@ -1,0 +1,51 @@
+# Michael Kirsch - Buy Sell Simple Model
+
+# Maximize profit selling corn with fixed storage space
+
+CPLEX 12.7.1.0: optimal solution; objective 29333.33333
+7 dual simplex iterations (5 in phase I)
+ampl: display x1,y1,x2,y2,x3,y3,x4,y4;
+x1 = 3.33333
+y1 = 0
+x2 = 0
+y2 = 0
+x3 = 0
+y3 = 0
+x4 = 0
+y4 = 53.3333
+
+# LP
+
+# xi  tons bought in Jan, Feb, March, April (i = 1,2,3,4)
+# yi  tons sold in Jan, Feb, March, April (i = 1,2,3,4)
+
+# storage capacity = 100
+# initial tons of corn on hand = 50
+# buying cost per ton Jan1 = 300, Feb1 = 350, Mar1 = 400, Apr1 = 500
+# selling price per ton Jan30 = 250, Feb28 = 400, Mar30 = 350, Apr30 = 550
+
+var x1 >=0;
+var x2 >=0;
+var x3 >=0;
+var x4 >=0;
+var y1 >=0;
+var y2 >=0;
+var y3 >=0;
+var y4 >=0;
+
+maximize profit: 1000 + 250*y1 - 300*x1 + 400*y2 - 350*x2 + 350*y3 - 400*x3 + 550*y4 - 500*x4;
+
+subject to storageJan1: 50 + x1 <= 100;
+subject to storageFeb1: 50 + x1 - y1 + x2 <= 100;
+subject to storageMar1: 50 + x1 - y1 + x2 - y2 + x3 <= 100;
+subject to storageApr1: 50 + x1 - y1 + x2 - y2 + x3 - y3 + x4 <= 100;
+
+subject to sellJan30: y1 <= 50 + x1;
+subject to sellFeb28: y2 <= 50 + x1 - y1 + x2;
+subject to sellMar30: y3 <= 50 + x1 - y1 + x2 - y2 + x3;
+subject to sellApr30: y4 <= 50 + x1 - y1 + x2 - y2 + x3 - y3 + x4;
+
+subject to buyJan: 300*x1 <= 1000;
+subject to buyFeb: 350*x2 <= 1000 - 300*x1 + 250*y1;
+subject to buyMarch: 400*x3 <= 1000 - 300*x1 + 250*y1 - 350*x2 + 400*y2;
+subject to buyApril: 500*x4 <= 1000 - 300*x1 + 250*y1 - 350*x2 + 400*y2 - 400*x3 + 350*y3;
