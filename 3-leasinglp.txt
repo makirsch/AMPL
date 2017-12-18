@@ -1,0 +1,88 @@
+# Michael Kirsch - H.L. 3.4-10 Leasing Space Over Time
+
+# Minimize cost to lease different amounts of space over five months
+
+CPLEX 12.7.1.0: optimal solution; objective 7650000
+3 dual simplex iterations (0 in phase I)
+ampl: display spaceLeased;
+spaceLeased :=
+m1 l1       0
+m1 l2       0
+m1 l3       0
+m1 l4       0
+m1 l5   30000
+m2 l1       0
+m2 l2       0
+m2 l3       0
+m2 l4       0
+m3 l1   10000
+m3 l2       0
+m3 l3       0
+m4 l1       0
+m4 l2       0
+m5 l1   20000
+
+
+# Model file
+
+set months; # month of lease
+set leases; # leasing periods(1-5 months duration)
+set contracts within{months, leases}; # possible month lease combinations
+set covers{months} within contracts; # multiple sets of contracts possible for each month
+
+param leasingCost{leases};
+param minSpace{months} >=0; # square feet of spaced needed each month
+
+var spaceLeased{contracts} >=0; # square feet of space leased
+
+# Objective Function
+
+minimize totalCost:
+sum{(m, l) in contracts}leasingCost[l]*spaceLeased[m,l];
+
+# S.T.
+
+subject to spaceMinimum{m in months}:
+sum{(n, l) in covers[m]}spaceLeased[n,l]>= minSpace[m];
+
+
+# Data File
+
+set leases := l1 l2 l3 l4 l5;
+
+set contracts:=
+m1 l1
+m1 l2
+m1 l3
+m1 l4
+m1 l5
+m2 l1
+m2 l2
+m2 l3
+m2 l4
+m3 l1
+m3 l2
+m3 l3
+m4 l1
+m4 l2
+m5 l1;
+
+param: leasingCost:=
+l1 65
+l2 100
+l3 135
+l4 160
+l5 190;
+
+param: months: minSpace:=
+m1 30000
+m2 20000
+m3 40000
+m4 10000
+m5 50000;
+
+set covers[m1] := m1 l1 m1 l2 m1 l3 m1 l4 m1 l5;
+set covers[m2] := m1 l2 m1 l3 m1 l4 m1 l5 m2 l1 m2 l2 m2 l3 m2 l4;
+set covers[m3] := m1 l3 m1 l4 m1 l5 m2 l2 m2 l3 m2 l4 m3 l1 m3 l2 m3 l3;
+set covers[m4] := m1 l4 m1 l5 m2 l3 m2 l4 m3 l2 m3 l3 m4 l1 m4 l2;
+set covers[m5] := m1 l5 m2 l4 m3 l3 m4 l2 m5 l1;

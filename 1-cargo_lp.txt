@@ -1,0 +1,67 @@
+# Michael Kirsch - H.L. Cargo Distribution Problem
+
+CPLEX 12.7.1.0: optimal solution; objective 13330
+10 dual simplex iterations (3 in phase I)
+ampl: display acceptedCargo;
+acceptedCargo :=
+1 back      0
+1 center    7.5
+1 front     0
+2 back      0
+2 center    3.5
+2 front     0
+3 back      5
+3 center    0
+3 front    11
+4 back      5
+4 center    7
+4 front     1
+
+
+# Model File:
+
+set compartments;
+set cargos;
+
+param availableTons{cargos}; # tons of each cargo type available
+param volume{cargos}; # volume taken up by each cargo type
+param profit{cargos};
+param weightCapacity{compartments};
+param spaceCapacity{compartments};
+param weightDistribution{compartments};
+
+var acceptedCargo{cargos, compartments} >=0;
+
+# Objective:
+
+maximize totalProfit:
+sum{c in cargos, s in compartments}profit[c]*acceptedCargo[c,s];
+
+# S.T.:
+
+subject to weightLimit{s in compartments}:
+sum{c in cargos}acceptedCargo[c,s] <= weightCapacity[s];
+
+subject to volumeLimit{s in compartments}:
+sum{c in cargos}volume[c]*acceptedCargo[c,s] <= spaceCapacity[s];
+
+subject to weightBalance{s in compartments}:
+sum{c in cargos}(acceptedCargo[c,s]) =
+weightDistribution[s]*sum{c in cargos, f in compartments}acceptedCargo[c,f];
+
+subject to cargoAvailable{c in cargos}:
+sum{s in compartments}acceptedCargo[c,s] <= availableTons[c];
+
+
+# Data file 
+
+param: cargos: availableTons volume profit :=
+1 20 500 320
+2 16 700 400
+3 25 600 360
+4 13 400 290;
+
+param: compartments: weightCapacity spaceCapacity weightDistribution :=
+front 12 7000 .3
+center 18 9000 .45
+back 10 5000 .25;

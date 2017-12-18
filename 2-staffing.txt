@@ -1,0 +1,70 @@
+# H.L. 3.4-11 Computer Consultant Staffing Problem
+
+# Minimize cost to staff part time and full time workers.
+
+CPLEX 12.7.1.0: optimal solution; objective 4106.666667
+7 dual simplex iterations (0 in phase I)
+ampl: display nWorkers;
+nWorkers [*] :=
+FT1  2.66667
+FT2  2.66667
+FT3  4
+PT1  1.33333
+PT2  2.66667
+PT3  3.33333
+PT4  2
+
+
+# Model File
+
+set shifts;
+set timeslots;
+set covers{timeslots} within shifts;
+set fullTime{timeslots} within shifts;
+set partTime{timeslots} within shifts;
+
+param needed{timeslots}; #n workers needed in that slot
+param costPerWorker{shifts};
+
+var nWorkers{shifts} >=0;
+
+minimize cost:
+sum{s in shifts}costPerWorker[s]*nWorkers[s];
+
+subject to enoughWorkers{t in timeslots}:
+sum{s in covers[t]}nWorkers[s] >= needed[t];
+
+subject to fullTimeMin{t in timeslots}:
+sum{s in fullTime[t]}nWorkers[s] >= sum{s in partTime[t]}2*nWorkers[s];
+
+# Data File:
+
+param: shifts: costPerWorker :=
+FT1 320
+FT2 320
+FT3 320
+PT1 120
+PT2 120
+PT3 120
+PT4 120;
+
+param: timeslots: needed:=
+8am12pm 4
+12pm4pm 8
+4pm8pm 10
+8pm12am 6;
+
+set covers[8am12pm] := FT1 PT1;
+set covers[12pm4pm] := FT1 FT2 PT2;
+set covers[4pm8pm] := FT2 FT3 PT3;
+set covers[8pm12am] := FT3 PT4;
+
+set fullTime[8am12pm] := FT1;
+set fullTime[12pm4pm] := FT1 FT2;
+set fullTime[4pm8pm] := FT2 FT3;
+set fullTime[8pm12am] := FT3;
+
+set partTime[8am12pm] := PT1;
+set partTime[12pm4pm] := PT2;
+set partTime[4pm8pm] := PT3;
+set partTime[8pm12am] := PT4;
